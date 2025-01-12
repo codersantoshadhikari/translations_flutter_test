@@ -1,21 +1,42 @@
-import 'package:equatable/equatable.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-part 'counter_state.dart';
+class CounterState {
+  final int count;
 
-class CounterCubit extends HydratedCubit<CounterState> {
-  CounterCubit() : super(const CounterInitial(count: 0));
+  CounterState({required this.count});
+}
 
-  void increment() => emit(CounterUpdate(count: state.count + 1));
-  void decrement() => emit(CounterUpdate(count: state.count - 1));
+class CounterProvider extends ChangeNotifier {
+  CounterState _state;
 
-  @override
-  CounterState fromJson(Map<String, dynamic> json) {
-    return CounterState(count: json['value'] as int);
+  CounterProvider() : _state = CounterState(count: 0) {
+    _loadCounter();
   }
 
-  @override
-  Map<String, dynamic> toJson(CounterState state) {
-    return <String, int>{'value': state.count};
+  CounterState get state => _state;
+
+  void increment() {
+    _state = CounterState(count: _state.count + 1);
+    notifyListeners();
+    _saveCounter();
+  }
+
+  void decrement() {
+    _state = CounterState(count: _state.count - 1);
+    notifyListeners();
+    _saveCounter();
+  }
+
+  Future<void> _loadCounter() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int savedCount = prefs.getInt('counter') ?? 0;
+    _state = CounterState(count: savedCount);
+    notifyListeners();
+  }
+
+  Future<void> _saveCounter() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('counter', _state.count);
   }
 }
