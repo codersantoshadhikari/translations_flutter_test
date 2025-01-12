@@ -1,4 +1,4 @@
-name: translations_flutter_test
+name: app_drawer
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -34,15 +34,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  # provider: ^6.1.2
-  http: ^1.2.2
-  easy_localization: ^3.0.7
-  path_provider: ^2.1.5
-  shared_preferences: ^2.3.5
-  # hydrated_bloc: ^9.1.5
-  # flutter_bloc: ^8.1.6
+  flutter_bloc: ^8.1.6
   equatable: ^2.0.7
-  provider: ^6.1.2
+  http: ^1.2.2
+  path_provider: ^2.1.5
+  easy_localization: ^3.0.7
+  hydrated_bloc: ^9.1.5
 
 dev_dependencies:
   flutter_test:

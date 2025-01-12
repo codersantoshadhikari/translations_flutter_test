@@ -1,12 +1,14 @@
 import 'dart:convert';
+
 import 'package:http/http.dart';
+
 import 'models/locale.dart';
 
 class TranslationFromGithub {
   static Future<Map<String, dynamic>> getTranslations() async {
     final translationResponse = await get(
       Uri.parse(
-        'https://raw.githubusercontent.com/codersantoshadhikari/translations.json',
+        'https://raw.githubusercontent.com/codersantoshadhikari/translations/main/translations.json',
       ),
     );
 
@@ -17,7 +19,7 @@ class TranslationFromGithub {
       {required String languageCode}) async {
     final arResponse = await get(
       Uri.parse(
-          "https://raw.githubusercontent.com/codersantoshadhikari/translations.json"),
+          "https://raw.githubusercontent.com/codersantoshadhikari/translations/main/$languageCode.json"),
     );
 
     return jsonDecode(arResponse.body);

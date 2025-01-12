@@ -1,6 +1,6 @@
 {
-    "name": "translations_flutter_test",
-    "short_name": "translations_flutter_test",
+    "name": "app_drawer",
+    "short_name": "app_drawer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

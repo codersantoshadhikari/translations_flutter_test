@@ -1,16 +1,25 @@
+import 'package:app_drawer/counter/counter_cubit.dart';
+import 'package:app_drawer/home.dart';
+import 'package:app_drawer/translation.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'models/locale.dart';
-import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorage.webStorageDirectory
+        : await getTemporaryDirectory(),
+  );
 
-  // Load the initial counter value from SharedPreferences
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final int initialCount = prefs.getInt('counter') ?? 0;
+  Map<String, dynamic> finalData =
+      await TranslationFromGithub.getLocalizationDataFromGithub();
 
   runApp(EasyLocalization(
       supportedLocales: AppLocale.supportedLocales
@@ -18,17 +27,27 @@ void main() async {
           .toList(),
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      child: MyApp(initialCount: initialCount)));
+      assetLoader: MyHttpLocalizationLoader(finalData),
+      child: const MyApp()));
+}
+
+class MyHttpLocalizationLoader extends AssetLoader {
+  final Map<String, dynamic> data;
+  const MyHttpLocalizationLoader(this.data);
+
+  @override
+  Future<Map<String, dynamic>?> load(String path, Locale locale) async {
+    return data[locale.toString()];
+  }
 }
 
 class MyApp extends StatelessWidget {
-  final int initialCount;
-  const MyApp({super.key, required this.initialCount});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CounterModel(initialCount),
+    return BlocProvider(
+      create: (context) => CounterCubit(),
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
@@ -44,41 +63,23 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class CounterModel extends ChangeNotifier {
-  int _count;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
 
-  CounterModel(this._count);
+  final String title;
 
-  int get count => _count;
-
-  Future<void> increment() async {
-    _count++;
-    await _saveCounterValue();
-    notifyListeners();
-  }
-
-  Future<void> decrement() async {
-    _count--;
-    await _saveCounterValue();
-    notifyListeners();
-  }
-
-  Future<void> _saveCounterValue() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('counter', _count);
-  }
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
+class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const MyDrawer(),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('Flutter Demo'),
+        title: Text(widget.title),
       ),
       body: Center(
         child: Column(
@@ -87,25 +88,24 @@ class HomeScreen extends StatelessWidget {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Consumer<CounterModel>(
-              builder: (context, counter, child) {
+            BlocBuilder<CounterCubit, CounterState>(
+              builder: (context, state) {
                 return Text(
-                  counter.count.toString(),
+                  state.count.toString(),
                   style: Theme.of(context).textTheme.headlineMedium,
                 );
               },
             ),
             TextButton(
-              onPressed: () {
-                context.read<CounterModel>().decrement();
-              },
-              child: const Text("Decrement"),
-            ),
+                onPressed: () {
+                  context.read<CounterCubit>().decrement();
+                },
+                child: const Text("ok")),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.read<CounterModel>().increment(),
+        onPressed: () => context.read<CounterCubit>().increment(),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),

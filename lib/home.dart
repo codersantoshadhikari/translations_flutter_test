@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Text("welcome_header".tr()),
             Text(
-              "how_you".tr(),
+              "rate_us".tr(),
               style: const TextStyle(fontSize: 46),
             ),
             Text(
